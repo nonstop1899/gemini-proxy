@@ -3,7 +3,8 @@ const app = express();
 
 const PROXY_SECRET = 'LL_Gemini_Proxy_2024_SecretKey_xyz123';
 
-app.use(express.json());
+// Увеличиваем лимит для больших запросов (история чата может быть большой)
+app.use(express.json({ limit: '10mb' }));
 
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
