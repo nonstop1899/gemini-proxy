@@ -48,7 +48,7 @@ app.get('/download', async (req, res) => {
     return res.status(400).json({ error: 'Missing uri or key' });
   }
   try {
-    const url = new URL(uri);
+    const url = new URL(decodeURIComponent(uri));
     url.searchParams.set('key', key);
     const response = await fetch(url.toString());
     if (!response.ok) {
