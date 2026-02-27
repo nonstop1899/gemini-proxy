@@ -48,16 +48,11 @@ app.get('/download', async (req, res) => {
     return res.status(400).json({ error: 'Missing uri or key' });
   }
   try {
-    // Express auto-decodes query params, but decodeURIComponent is safe to call again on already-decoded strings
     const url = new URL(decodeURIComponent(uri));
     url.searchParams.set('key', key);
-    const finalUrl = url.toString();
-    console.log(`[download] Fetching: ${finalUrl.substring(0, 120)}...`);
-    const response = await fetch(finalUrl);
-    console.log(`[download] Response: ${response.status}, content-type: ${response.headers.get('content-type')}`);
+    const response = await fetch(url.toString());
     if (!response.ok) {
       const text = await response.text();
-      console.log(`[download] Error body: ${text.substring(0, 300)}`);
       return res.status(response.status).type('json').send(text);
     }
     res.setHeader('Content-Type', response.headers.get('content-type') || 'video/mp4');
