@@ -42,6 +42,33 @@ app.post('/', async (req, res) => {
   }
 });
 
+app.get('/download', async (req, res) => {
+  const { uri, key } = req.query;
+  if (!uri || !key) {
+    return res.status(400).json({ error: 'Missing uri or key' });
+  }
+  try {
+    const url = new URL(uri);
+    url.searchParams.set('key', key);
+    const response = await fetch(url.toString());
+    if (!response.ok) {
+      const text = await response.text();
+      return res.status(response.status).type('json').send(text);
+    }
+    res.setHeader('Content-Type', response.headers.get('content-type') || 'video/mp4');
+    const reader = response.body.getReader();
+    const pump = async () => {
+      const { done, value } = await reader.read();
+      if (done) { res.end(); return; }
+      res.write(Buffer.from(value));
+      await pump();
+    };
+    await pump();
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 app.get('/', (req, res) => {
   res.json({ status: 'ok', service: 'gemini-proxy', region: 'US' });
 });
